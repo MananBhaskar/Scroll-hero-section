@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Space Scroll</title>
+    <!-- <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Space+Mono&display=swap" rel="stylesheet"> -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Audiowide&family=Space+Mono&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: #04020f;
+        color: #e0d8ff;
+        font-family: "Space Mono", monospace;
+        overflow-x: hidden;
+      }
+
+      /* Stars — simple fixed dots via radial-gradient */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          radial-gradient(
+            1px 1px at 10% 20%,
+            rgba(255, 255, 255, 0.7) 0%,
+            transparent 100%
+          ),
+          radial-gradient(
+            1px 1px at 25% 55%,
+            rgba(255, 255, 255, 0.5) 0%,
+            transparent 100%
+          ),
+          radial-gradient(
+            1px 1px at 40% 10%,
+            rgba(255, 255, 255, 0.6) 0%,
+            transparent 100%
+          ),
+          radial-gradient(
+            1px 1px at 55% 80%,
+            rgba(255, 255, 255, 0.4) 0%,
+            transparent 100%
+          ),
+          radial-gradient(
+            1px 1px at 70% 35%,
+            rgba(255, 255, 255, 0.7) 0%,
+            transparent 100%
+          ),
+          radial-gradient(
+            1px 1px at 85% 65%,
+            rgba(255, 255, 255, 0.5) 0%,
+            transparent 100%
+          ),
+          radial-gradient(
+            1px 1px at 15% 75%,
+            rgba(255, 255, 255, 0.6) 0%,
+            transparent 100%
+          ),
+          radial-gradient(
+            1px 1px at 30% 90%,
+            rgba(255, 255, 255, 0.4) 0%,
+            transparent 100%
+          ),
+          radial-gradient(
+            1px 1px at 60% 50%,
+            rgba(255, 255, 255, 0.5) 0%,
+            transparent 100%
+          ),
+          radial-gradient(
+            1px 1px at 90% 15%,
+            rgba(255, 255, 255, 0.7) 0%,
+            transparent 100%
+          ),
+          radial-gradient(
+            1px 1px at 5% 45%,
+            rgba(255, 255, 255, 0.4) 0%,
+            transparent 100%
+          ),
+          radial-gradient(
+            1px 1px at 75% 90%,
+            rgba(255, 255, 255, 0.6) 0%,
+            transparent 100%
+          ),
+          radial-gradient(
+            1px 1px at 48% 30%,
+            rgba(255, 255, 255, 0.5) 0%,
+            transparent 100%
+          ),
+          radial-gradient(
+            1px 1px at 92% 70%,
+            rgba(255, 255, 255, 0.4) 0%,
+            transparent 100%
+          ),
+          radial-gradient(
+            1px 1px at 20% 40%,
+            rgba(255, 255, 255, 0.6) 0%,
+            transparent 100%
+          ),
+          radial-gradient(
+            1px 1px at 65% 15%,
+            rgba(255, 255, 255, 0.5) 0%,
+            transparent 100%
+          ),
+          radial-gradient(
+            1px 1px at 38% 68%,
+            rgba(255, 255, 255, 0.7) 0%,
+            transparent 100%
+          ),
+          radial-gradient(
+            1px 1px at 82% 42%,
+            rgba(255, 255, 255, 0.4) 0%,
+            transparent 100%
+          ),
+          radial-gradient(
+            1px 1px at 50% 95%,
+            rgba(255, 255, 255, 0.5) 0%,
+            transparent 100%
+          ),
+          radial-gradient(
+            1px 1px at 8% 85%,
+            rgba(255, 255, 255, 0.6) 0%,
+            transparent 100%
+          );
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* Tall scroll space */
+      .scroll-track {
+        height: 500vh;
+      }
+
+      /* Sticky viewport */
+      .scene {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow: hidden;
+        z-index: 1;
+      }
+
+      /* Subtle center guide line */
+      .guideline {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(
+          to right,
+          transparent 4%,
+          rgba(176, 110, 243, 0.07) 25%,
+          rgba(176, 110, 243, 0.07) 75%,
+          transparent 96%
+        );
+      }
+
+      /* Left brand text */
+      .brand {
+        position: absolute;
+        left: 44px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 5;
+      }
+      .brand span {
+        font-family: "Orbitron", sans-serif;
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0.22em;
+        color: rgba(176, 110, 243, 0.4);
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        display: block;
+      }
+
+      /* Rocket */
+      #rocket {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 150px;
+        z-index: 10;
+        will-change: transform;
+        filter: drop-shadow(0 0 16px rgba(176, 110, 243, 0.9))
+          drop-shadow(0 0 36px rgba(0, 229, 255, 0.35));
+      }
+
+      /* Flame trail */
+      #trail {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        height: 2px;
+        left: 0;
+        width: 0;
+        background: linear-gradient(
+          to right,
+          transparent,
+          rgba(0, 229, 255, 0.12),
+          rgba(176, 110, 243, 0.55)
+        );
+        border-radius: 2px;
+        filter: blur(1px);
+        z-index: 8;
+      }
+
+      /* WELCOME / ITZFIZZ */
+      .welcome {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        z-index: 4;
+        pointer-events: none;
+        white-space: nowrap;
+      }
+      .welcome .word {
+        display: flex;
+      }
+      .welcome .letter {
+        font-family: "Audiowide", cursive;
+        font-size: clamp(2rem, 5vw, 5.5rem);
+        letter-spacing: 0.15em;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: 0.4s ease;
+      }
+      /* WELCOME – Warm */
+      .welcome-word .letter {
+        background: linear-gradient(90deg, #ff6a00, #ffcc00, #ff0066);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow:
+          0 0 15px rgba(255, 106, 0, 0.7),
+          0 0 30px rgba(255, 0, 102, 0.6);
+      }
+
+      /* ITZFIZZ – Cool */
+      .brand-word .letter {
+        background: linear-gradient(90deg, #00f7ff, #00ff88, #7a5cff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow:
+          0 0 15px rgba(0, 247, 255, 0.8),
+          0 0 35px rgba(122, 92, 255, 0.7);
+      }
+      .welcome .letter.lit {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* Stats */
+      .stats {
+        position: absolute;
+        right: 60px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+      }
+
+      .stat {
+        width: 220px;
+        padding: 18px 20px;
+        border-radius: 16px;
+
+        background: rgba(20, 10, 50, 0.35);
+        backdrop-filter: blur(10px);
+
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow:
+          0 0 20px rgba(0, 247, 255, 0.15),
+          inset 0 0 15px rgba(255, 0, 255, 0.1);
+
+        opacity: 0;
+        transform: translateX(30px) scale(0.95);
+        transition: 0.6s ease;
+      }
+
+      .stat.show {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+      }
+      .stat .pct {
+        font-family: "Audiowide", cursive;
+        font-size: 1.8rem;
+        background: linear-gradient(90deg, #ff00ff, #00f7ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .stat .pct span {
+        font-size: 1rem;
+      }
+      .stat .info {
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        color: #a89bff;
+        margin-top: 6px;
+        text-transform: uppercase;
+      }
+
+      .stat::after {
+        content: "";
+        display: block;
+        height: 3px;
+        margin-top: 10px;
+        border-radius: 3px;
+        background: linear-gradient(90deg, #ff00ff, #00f7ff);
+        box-shadow: 0 0 10px #00f7ff;
+      }
+      /* Scroll hint */
+      .hint {
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 15px;
+        letter-spacing: 0.3em;
+        color: #7b6fa0;
+        text-transform: uppercase;
+        z-index: 20;
+        transition: opacity 0.4s;
+        text-align: center;
+        pointer-events: none;
+      }
+      .hint::after {
+        content: "";
+        display: block;
+        margin: 8px auto 0;
+        width: 1px;
+        height: 28px;
+        background: linear-gradient(to bottom, #b06ef3, transparent);
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 0.3;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="scroll-track">
+      <div class="scene">
+        <div class="guideline"></div>
+
+        <div class="brand">
+          <span>C O S M O S &nbsp;·&nbsp; M I S S I O N &nbsp; 0 1</span>
+        </div>
+
+        <div id="trail"></div>
+
+        <div class="welcome">
+          <div class="word welcome-word">
+            <div class="letter" id="l0">W</div>
+            <div class="letter" id="l1">E</div>
+            <div class="letter" id="l2">L</div>
+            <div class="letter" id="l3">C</div>
+            <div class="letter" id="l4">O</div>
+            <div class="letter" id="l5">M</div>
+            <div class="letter" id="l6">E</div>
+          </div>
+
+          <div class="word brand-word">
+            <div class="letter" id="l7">I</div>
+            <div class="letter" id="l8">T</div>
+            <div class="letter" id="l9">Z</div>
+            <div class="letter" id="l10">F</div>
+            <div class="letter" id="l11">I</div>
+            <div class="letter" id="l12">Z</div>
+            <div class="letter" id="l13">Z</div>
+          </div>
+        </div>
+
+        <svg
+          id="rocket"
+          viewBox="0 0 120 220"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <!-- Outer Glow -->
+          <ellipse
+            cx="60"
+            cy="200"
+            rx="25"
+            ry="35"
+            fill="url(#engineOuter)"
+            opacity="0.8"
+          />
+          <ellipse
+            cx="60"
+            cy="210"
+            rx="12"
+            ry="18"
+            fill="url(#engineCore)"
+            opacity="1"
+          />
+
+          <!-- Main Body -->
+          <path
+            d=" M60 10 C35 10 20 60 20 120 L20 170 L60 190 L100 170 L100 120 C100 60 85 10 60 10Z"
+            fill="url(#bodyGrad)"
+          />
+
+          <!-- Center Neon Spine -->
+          <rect
+            x="56"
+            y="35"
+            width="8"
+            height="135"
+            rx="4"
+            fill="#00f7ff"
+            opacity="0.7"
+          />
+
+          <!-- Left Fin -->
+          <path d="M20 130 L0 190 L20 170Z" fill="url(#finGrad)" />
+
+          <!-- Right Fin -->
+          <path d="M100 130 L120 190 L100 170Z" fill="url(#finGrad)" />
+
+          <!-- Neon Ring Window -->
+          <circle cx="60" cy="85" r="22" fill="#0a0020" />
+          <circle cx="60" cy="85" r="16" fill="url(#windowGrad)" />
+          <circle
+            cx="60"
+            cy="85"
+            r="22"
+            fill="none"
+            stroke="#00f7ff"
+            stroke-width="3"
+          />
+
+          <!-- Detail Lines -->
+          <rect x="35" y="120" width="50" height="5" rx="3" fill="#ff00ff88" />
+          <rect x="40" y="150" width="40" height="5" rx="3" fill="#ff00ff88" />
+
+          <!-- Gradients -->
+          <defs>
+            <!-- Vibrant Body -->
+            <linearGradient id="bodyGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#ff00ff" />
+              <stop offset="50%" stop-color="#ffffff" />
+              <stop offset="100%" stop-color="#00f7ff" />
+            </linearGradient>
+
+            <!-- Neon Fins -->
+            <linearGradient id="finGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#ff00ff" />
+              <stop offset="100%" stop-color="#00f7ff" />
+            </linearGradient>
+
+            <!-- Window Glow -->
+            <radialGradient id="windowGrad" cx="50%" cy="50%">
+              <stop offset="0%" stop-color="#00f7ff" />
+              <stop offset="100%" stop-color="#12002a" />
+            </radialGradient>
+
+            <!-- Engine Glow -->
+            <linearGradient id="engineOuter" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffffff" />
+              <stop offset="40%" stop-color="#00f7ff" />
+              <stop offset="100%" stop-color="transparent" />
+            </linearGradient>
+
+            <linearGradient id="engineCore" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffffff" />
+              <stop offset="100%" stop-color="#ff00ff" />
+            </linearGradient>
+          </defs>
+        </svg>
+
+        <div class="stats">
+          <div class="stat" id="s0">
+            <div class="pct">4.2 <span>LY</span></div>
+            <div class="info">Distance to Proxima Centauri</div>
+          </div>
+          <div class="stat" id="s1">
+            <div class="pct">97 <span>%</span></div>
+            <div class="info">Mission success rate</div>
+          </div>
+          <div class="stat" id="s2">
+            <div class="pct">5,600 <span>+</span></div>
+            <div class="info">Exoplanets discovered</div>
+          </div>
+          <div class="stat" id="s3">
+            <div class="pct">0.1 <span>C</span></div>
+            <div class="info">Target propulsion velocity</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hint" id="hint">Scroll</div>
+
+    <script>
+      const rocket = document.getElementById("rocket");
+      const trail = document.getElementById("trail");
+      const hint = document.getElementById("hint");
+      const letters = Array.from({ length: 14 }, (_, i) =>
+        document.getElementById("l" + i),
+      );
+      const stats = [0, 1, 2, 3].map((i) => document.getElementById("s" + i));
+
+      // scroll fraction 0→1
+      let target = 0,
+        smooth = 0;
+
+      window.addEventListener(
+        "scroll",
+        () => {
+          target =
+            window.scrollY / (document.body.scrollHeight - window.innerHeight);
+        },
+        { passive: true },
+      );
+
+      function lerp(a, b, t) {
+        return a + (b - a) * t;
+      }
+
+      (function tick() {
+        smooth = lerp(smooth, target, 0.07);
+
+        const W = window.innerWidth;
+        const x = lerp(-60, W + 60, smooth);
+
+        // Move rocket
+        rocket.style.transform = `translateX(${x}px) translateY(-50%) rotate(90deg)`;
+
+        // Trail behind rocket
+        const trailEnd = Math.max(0, x - 55);
+        trail.style.left = Math.max(0, trailEnd - W * 0.28) + "px";
+        trail.style.width =
+          Math.max(0, trailEnd - Math.max(0, trailEnd - W * 0.28)) + "px";
+
+        // Scroll hint
+        hint.style.opacity = smooth < 0.03 ? 1 : 0;
+
+        // Letters: WELCOME at 0.29–0.37, ITZFIZZ at 0.37–0.45
+        letters.forEach((el, i) => {
+          const base = i < 7 ? 0.29 : 0.37;
+          const idx = i < 7 ? i : i - 7;
+          el.classList.toggle("lit", smooth >= base + idx * 0.012);
+        });
+
+        // Stats at 0.18, 0.36, 0.54, 0.72
+        stats.forEach((el, i) => {
+          el.classList.toggle("show", smooth >= 0.18 + i * 0.18);
+        });
+
+        requestAnimationFrame(tick);
+      })();
+    </script>
+  </body>
+</html>
